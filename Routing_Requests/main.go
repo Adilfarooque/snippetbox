@@ -10,6 +10,14 @@ const (
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
+	//Check if the current request URL path exactly matches "/" . If it donsn't, use
+	//the http.NotFound() function to send a 404 to the client.
+	//Importantly , we then  return from the handler. If we don't return the handler
+	//would keep executing and also write the "Hello from SnippetBox" message.
+	if r.URL.Path != "/"{
+		http.NotFound(w,r)
+		return
+	}
 	w.Write([]byte("Hello from Snippetbox"))
 }
 
@@ -31,9 +39,8 @@ func main() {
 	mux.HandleFunc("/snippet/view/", snippetView)
 	mux.HandleFunc("/snippet/create/", snippetCreate)
 
-	log.Print("Starting server on",port)
-	if err := http.ListenAndServe(port, mux); err != nil{
+	log.Print("Starting server on", port)
+	if err := http.ListenAndServe(port, mux); err != nil {
 		log.Fatal(err)
 	}
 }
-
