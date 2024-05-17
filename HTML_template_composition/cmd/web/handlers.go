@@ -1,11 +1,9 @@
 package main
 
 import (
-	"fmt"
-	"html/template" //New import
+	"html/template"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -13,34 +11,34 @@ func home(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	
-	tpl, err := template.ParseFiles("C:/Users/Adilf/OneDrive/Desktop/Code World/code/snippetbox./HTML_templating_inheritance/internal/ui/html/pages/home.tmpl")
-	if err != nil {
-		log.Print(err.Error())
-		http.Error(w, "Internal Server Error :", http.StatusInternalServerError)
-		return
+
+	//Initialize a slice containing the paths to the two files. It's important
+	//to note that file containing our base template must be the  *first*
+
+	//file in slice.
+
+	files := []string{
+		"./ui/html/base.tmpl",
+		"./ui/html/pages/home.tmpl",
+		"./ui/html/partials/nav.tmpl",
 	}
 
-	if err = tpl.Execute(w, nil); err != nil {
+	//Use the template.ParseFiles() function to read the files and store the
+	//templates in a template set. Notice that we can pass the slice of file
+	//path as a variadic parameters?
+
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
 		log.Print(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
-}
 
-func snippetView(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
-	if err != nil || id < 1 {
-		http.NotFound(w, r)
-		return
-	}
-	fmt.Fprintf(w, "Display a specific snippet with ID %d....", id)
-}
+	//Use the ExecuteTemplate() method to write the content of the "base"
+	//template as teh response body.
 
-func snippetCreate(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.Header().Set("Allow", "POST")
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
-		return
+	err = ts.ExecuteTemplate(w, "base", nil)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
-	w.Write([]byte("Create a new snippet..."))
 }
